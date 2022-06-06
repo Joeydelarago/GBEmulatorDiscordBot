@@ -75,7 +75,9 @@ class ImageBuffer():
         
     def get_all(self) -> List:
         # Return everything in buffer in order starting with item at buffer_index
-        return self.buffer[self.index:] + self.buffer[0:self.index]
+        all = self.buffer[self.index:] + self.buffer[0:self.index]
+        all = [frame for frame in all if frame is not None]
+        return 
         
         
 
@@ -83,6 +85,7 @@ class ImageBuffer():
 if __name__ == "__main__":
     # Bit of testing code
     emulation_stream = EmulationStreamer(ROM_PATH)
+    emulation_stream.tick(1800)
     emulation_stream.export_buffer_as_gif()
     emulation_stream.save_state()
     emulation_stream.tick(100)
