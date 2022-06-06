@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import List
 from PIL.Image import Image
 from pyboy import PyBoy
@@ -55,6 +56,9 @@ class GifExporter():
         pass
     
     def create_gif(self, images: List[Image]) -> None:
+        if not images:
+            Logger.error("No images to export as gif")
+            return
         frame_one = images[0]
         frame_one.save("output.gif", format="GIF", append_images=images, save_all=True, duration=16, loop=0)
 
