@@ -49,7 +49,19 @@ class emulator(commands.Cog):
     def input(self, event: WindowEvent):
         # Pass event to pyboy emulator
         self.pyboy.send_input(event)
-                
+
+    @commands.Command
+    async def newgame(ctx):
+        emulation_stream = EmulationStreamer(ROM_PATH)
+        emulation_stream.tick(1800)
+        emulation_stream.export_buffer_as_gif()
+        emulation_stream.save_state()
+        emulation_stream.tick(100)
+        emulation_stream.load_state()
+
+    @commands.Command
+    async def poke(ctx):
+        pass             
 
 class GifExporter():
     def __init__(self):
@@ -83,19 +95,6 @@ def get_all(self) -> List:
     all = [frame for frame in all if frame is not None]
     return 
     
-            
-    @commands.Command
-    async def newgame(ctx):
-        emulation_stream = EmulationStreamer(ROM_PATH)
-        emulation_stream.tick(1800)
-        emulation_stream.export_buffer_as_gif()
-        emulation_stream.save_state()
-        emulation_stream.tick(100)
-        emulation_stream.load_state()
-
-    @commands.Command
-    async def poke(ctx):
-        pass
 
 def setup(client: commands.Bot):
     client.add_cog(emulator(client))
