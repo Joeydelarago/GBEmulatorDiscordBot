@@ -45,6 +45,48 @@ class emulator(commands.Cog):
     def input(self, event: WindowEvent):
         # Pass event to pyboy emulator
         self.pyboy.send_input(event)
+    
+    def move(move):
+        if move == 'up':
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_UP)
+            self.pyboy.tick()
+            self.pyboy.tick()
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_UP)      
+        elif move == 'down':
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_DOWN)
+            self.pyboy.tick()
+            self.pyboy.tick()
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)      
+        elif move == 'right':     
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
+            self.pyboy.tick()
+            self.pyboy.tick()
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
+        elif move == 'left':
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_LEFT)
+            self.pyboy.tick()
+            self.pyboy.tick()
+            pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
+        elif move == 'a':
+            pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
+            pyboy.tick()
+            pyboy.tick()
+            pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)        
+        elif move == 'b':
+            pyboy.send_input(WindowEvent.PRESS_BUTTON_B)
+            pyboy.tick()
+            pyboy.tick()
+            pyboy.send_input(WindowEvent.RELEASE_BUTTON_B)      
+        elif move == 'start':
+            pyboy.send_input(WindowEvent.PRESS_BUTTON_START)
+            pyboy.tick()
+            pyboy.tick()
+            pyboy.send_input(WindowEvent.RELEASE_BUTTON_START)       
+        elif move == 'select':
+            pyboy.send_input(WindowEvent.PRESS_BUTTON_SELECT)
+            pyboy.tick()
+            pyboy.tick()
+            pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
 
     @commands.Command
     async def newgame(self, ctx):
@@ -65,7 +107,14 @@ class emulator(commands.Cog):
         # This will try to emulate as fast as possible
         self.pyboy.set_emulation_speed(0)
         self.load_state()
-        self.tick(self.buffer_seconds * 60)             
+        self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
+        self.pyboy.tick()
+        self.pyboy.tick()
+        self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)      
+        self.tick(self.buffer_seconds * 60)
+        self.export_buffer_as_gif()
+        self.save_state()
+        return             
 
 class GifExporter():
     def __init__(self):
