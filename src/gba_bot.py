@@ -14,6 +14,7 @@ client = commands.Bot(
 )
 
 client.load_extension("cogs.emulator")
+client.load_extension("cogs.game_library")
 
 
 @client.event

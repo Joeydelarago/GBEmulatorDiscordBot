@@ -5,7 +5,6 @@ from pyboy.utils import WindowEvent
 from discord.ext import commands
 
 import discord.embeds
-from src.game_library import GameLibrary
 from src.gif_exporter import GifExporter
 from src.image_buffer import ImageBuffer
 
@@ -17,7 +16,6 @@ class Emulator(commands.Cog):
         self.pyboy = None
 
         self.saves_path = os.getcwd() + "/saves"
-        self.roms_path = os.getcwd() + "/roms"
         self.current_rom_name = ""
         self.save_slot = 0
         #  0 is fast as possible
@@ -28,10 +26,8 @@ class Emulator(commands.Cog):
         self.image_buffer = ImageBuffer(self.buffer_seconds * 60)
         
         self.gif_exporter = GifExporter()
-        
-        self.library = GameLibrary(self.roms_path)
 
-        self.initialize_game("pokemon-red", self.roms_path + "/" + "pokemon-red.gb")
+        self.initialize_game("pokemon-red", os.getcwd() + "/roms/" + "pokemon-red.gb")
         
     def tick(self, tick_count: int) -> None:
         for t in range(tick_count):
@@ -107,19 +103,6 @@ class Emulator(commands.Cog):
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_SELECT)
             self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
-
-
-    @commands.Command
-    async def load(self, ctx, query: str):
-        search_results = self.library.search_text(query)
-        if len(search_results) == 1:
-            self.close_game()
-            rom_name = search_results[0]
-            rom_path = self.library.get_game_path(rom_name)
-            self.initialize_game(rom_name, rom_path)
-        else:
-            #print some search options in chat
-            pass
 
     @commands.Command
     async def tick_test(self, ctx, tick_count: int = 60):
