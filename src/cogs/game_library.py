@@ -7,6 +7,7 @@ from typing import List, Set
 
 from discord.ext import commands
 
+from src.message_interaction import read_emoji_options
 
 class GameLibraryManager(commands.Cog):
     def __init__(self, client):
@@ -84,14 +85,7 @@ class GameLibraryManager(commands.Cog):
         quote_text = f'These games matched your query:\n>>> {one_word_per_line}'
         rom_options = await ctx.send(quote_text)
 
-        for option in self.search_options:
-            await rom_options.add_reaction(option)
-
-        try:
-            reaction, user = await self.client.wait_for("reaction_add", check=lambda reaction, user: reaction.message.id == rom_options.id, timeout=60)
-            return reaction.emoji
-        except asyncio.TimeoutError:
-            logging.info("Timed out selecting a game")
+        return await read_emoji_options(self.client, rom_options, self.search_options)
 
 
 def setup(client: commands.Bot):
