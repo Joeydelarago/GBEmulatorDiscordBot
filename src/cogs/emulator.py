@@ -10,13 +10,12 @@ from discord.ext import commands
 class emulator(commands.Cog):
     def __init__(self, client):
         
-        BUFFER_SECONDS=3 # buffer size in seconds
-
+        self.buffer_seconds = 6 # buffer size in seconds
+        self.rom_path='roms/pokemon-red.gb'
         self.client = client
-        
 
         # Initialize emulator screenshot buffer, each second is 60 frames
-        self.image_buffer = ImageBuffer(BUFFER_SECONDS * 60)
+        self.image_buffer = ImageBuffer(self.buffer_seconds * 60)
         
         self.gif_exporter = GifExporter()
         
@@ -49,9 +48,7 @@ class emulator(commands.Cog):
 
     @commands.Command
     async def newgame(self, ctx):
-        rom_path='roms/pokemon-red.gb'
-
-        self.pyboy = PyBoy(rom_path)
+        self.pyboy = PyBoy(self.rom_path)
 
         # This will try to emulate as fast as possible
         self.pyboy.set_emulation_speed(0)
@@ -62,8 +59,13 @@ class emulator(commands.Cog):
         return
 
     @commands.Command
-    async def poke(self, ctx):
-        pass             
+    async def poke(self, ctx, move, amount):
+        self.pyboy = PyBoy(self.rom_path)
+
+        # This will try to emulate as fast as possible
+        self.pyboy.set_emulation_speed(0)
+        self.load_state()
+        self.tick(self.buffer_seconds * 60)             
 
 class GifExporter():
     def __init__(self):
