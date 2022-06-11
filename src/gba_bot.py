@@ -1,6 +1,7 @@
 import discord
 import os
 
+from discord import emoji
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -13,6 +14,7 @@ client = commands.Bot(
 )
 
 client.load_extension("cogs.emulator")
+
 
 @client.event
 async def on_raw_reaction_add(payload):

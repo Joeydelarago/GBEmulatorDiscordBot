@@ -3,7 +3,7 @@ import os
 from typing import List
 
 
-class GameLibrarySearcher():
+class GameLibrarySearcher:
     def __init__(self, library_path: str):
         self.library_path = library_path
         self.library = os.listdir(self.library_path)

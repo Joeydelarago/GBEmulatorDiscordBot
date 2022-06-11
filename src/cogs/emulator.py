@@ -1,32 +1,38 @@
+import logging
+import os
 from logging import Logger
 from typing import List
 from PIL.Image import Image
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from discord.ext import commands
-from cogs.game_library_seacher import GameLibrarySearcher
 
 import discord.embeds
+from src.game_library_seacher import GameLibrarySearcher
+from src.gif_exporter import GifExporter
+from src.image_buffer import ImageBuffer
 
-""" Manages emulator state and returns gifs """
+
 class Emulator(commands.Cog):
+    """ Manages emulator state and returns gifs """
     def __init__(self, client):
-        
-        self.buffer_seconds = 6 # buffer size in seconds
-        self.rom_path = 'roms/pokemon-red.gb'
         self.client = client
+        self.pyboy = None
+
+        self.saves_path = os.getcwd() + "/saves"
+        self.roms_path = os.getcwd() + "/roms"
+        self.current_rom_name = ""
+        self.save_slot = 0
 
         # Initialize emulator screenshot buffer, each second is 60 frames
+        self.buffer_seconds = 6  # Buffer size in seconds
         self.image_buffer = ImageBuffer(self.buffer_seconds * 60)
         
         self.gif_exporter = GifExporter()
         
-        self.libary_searcher = GameLibrarySearcher("roms")
+        self.library_searcher = GameLibrarySearcher(self.roms_path)
 
-        # Saving init
-        self.save_slot = 0
-        self.save_prefix = "state_file_"
-        self.save_postfix = ".state" 
+        self.initialize_game("pokemon-red.gb")
         
     def tick(self, tick_count: int) -> None:
         for t in range(tick_count):
@@ -36,23 +42,35 @@ class Emulator(commands.Cog):
     def export_buffer_as_gif(self):
         self.gif_exporter.create_gif(self.image_buffer.get_all())
         
-    def save_state(self):
-        save_name = self.save_prefix + str(self.save_slot) + self.save_postfix
-        with open(save_name, "wb") as save_file:
+    def save_state(self) -> None:
+        save_name = "{rom_name}_{save_slot}.state".format(rom_name=self.current_rom_name, save_slot=self.save_slot)
+        with open(self.saves_path + "/" + save_name, "wb") as save_file:
             self.pyboy.save_state(save_file)
 
-    def load_state(self):
-        save_name = self.save_prefix + str(self.save_slot) + self.save_postfix
-        with open(save_name, "rb") as save_file:
+    def load_state(self) -> None:
+        save_name = "{rom_name}_{save_slot}.state".format(rom_name=self.current_rom_name, save_slot=self.save_slot)
+        save_path = self.saves_path + "/" + save_name
+
+        if not os.path.exists(save_path):
+            logging.warning("There is no save file to load at path: " + save_path)
+            return
+
+        with open(self.save_path + "/" + save_name, "rb") as save_file:
             self.pyboy.load_state(save_file)
 
-    def initialize_game(self, rom: str):
-        self.pyboy = PyBoy(rom)
-        self.rom_path = self.libary_searcher.library_path + rom
+    def initialize_game(self, rom_name: str, save_slot: int = 0) -> None:
+        self.current_rom_name = rom_name
+        self.pyboy = PyBoy(self.roms_path + "/" + rom_name)
+        self.save_slot = save_slot
+        self.load_state()
 
-    def input(self, event: WindowEvent):
-        # Pass event to pyboy emulator
-        self.pyboy.send_input(event)
+    def close_game(self):
+        if self.pyboy:
+            self.pyboy.save_state()
+            self.pyboy.stop()
+
+            #  This will remove the pyboy from memory
+            self.pyboy = None
     
     def move(self, move):
         if move == 'up':
@@ -88,6 +106,15 @@ class Emulator(commands.Cog):
             self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
 
+    @commands.Command
+    async def load(self, ctx, query: str):
+        search_results = self.library_searcher.search_text(query)
+        if len(search_results) == 1:
+            self.close_game()
+            self.initialize_game(search_results[0])
+        else:
+            #print some search options in chat
+            pass
 
     @commands.Command
     async def newgame(self, ctx):
@@ -99,17 +126,10 @@ class Emulator(commands.Cog):
         self.tick(self.buffer_seconds * 60)
         self.export_buffer_as_gif()
         self.save_state()
-        
-    async def load(self, ctx, query: str):
-        search_results = self.libary_searcher.search_text(query)
-        if len(search_results) == 1:
-            self.initialize_game(search_results[0])
-        else:
-            #print some search options in chat
-            pass
+        return
 
     @commands.Command
-    async def gba(self, ctx, move, amount: int=1):
+    async def gba(self, ctx, move, amount: int = 1):
         self.pyboy = PyBoy(self.rom_path)
 
         # This will try to emulate as fast as possible
@@ -121,42 +141,9 @@ class Emulator(commands.Cog):
         self.tick(self.buffer_seconds * 60)
         self.export_buffer_as_gif()
         self.save_state()
-        await ctx.send(file=discord.File('output.gif'))        
-        self.pyboy.stop
+        await ctx.send(file=discord.File('output.gif'))
+        self.pyboy.stop()
 
-
-class GifExporter():
-    def __init__(self):
-        pass
-    
-    def create_gif(self, images: List[Image]) -> None:
-        if not images:
-            Logger.error("No images to export as gif")
-            return
-        frame_one = images[0]
-        frame_one.save("output.gif", format="GIF", append_images=images, save_all=True, duration=16, loop=0)
-
-
-class ImageBuffer(): 
-    """ A circular buffer that stores [size] items """
-    def __init__(self, size: int):
-        self.size = size
-        self.index = 0
-    
-        # Fill the buffer to avoid assigning extra memory
-        self.buffer = [None] * size
-    
-    def push(self, item) -> None:
-        self.buffer[self.index] = item
-        # Increase the index by 1, wrap back to 0 when index > buffer size
-        self.index = (self.index + 1) % self.size
-        
-    def get_all(self) -> List:
-        # Return everything in buffer in order starting with item at buffer_index
-        all = self.buffer[self.index:] + self.buffer[0:self.index]
-        all = [frame for frame in all if frame is not None]
-        return all
-    
 
 def setup(client: commands.Bot):
     client.add_cog(Emulator(client))
