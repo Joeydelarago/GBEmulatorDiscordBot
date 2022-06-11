@@ -77,7 +77,6 @@ class GameLibraryManager(commands.Cog):
                 emulator.close_game()
                 emulator.initialize_game(rom_name, rom_path)
 
-
     async def choose_from_list(self, ctx, search_results: List[str]) -> str:
         self.search_results = search_results
         numbered_results = [f"{str(number + 1)}: {game}" for number, game in enumerate(search_results)]
@@ -94,12 +93,6 @@ class GameLibraryManager(commands.Cog):
         except asyncio.TimeoutError:
             logging.info("Timed out selecting a game")
 
-
-
-
-
-    # def load_number_query(self, reaction, user):
-    #     if reactF
 
 def setup(client: commands.Bot):
     client.add_cog(GameLibraryManager(client))
