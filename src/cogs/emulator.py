@@ -51,7 +51,7 @@ class emulator(commands.Cog):
         self.pyboy.send_input(event)
 
     @commands.Command
-    async def newgame(ctx):
+    async def newgame(self, ctx):
         emulation_stream = EmulationStreamer(ROM_PATH)
         emulation_stream.tick(1800)
         emulation_stream.export_buffer_as_gif()
@@ -60,7 +60,7 @@ class emulator(commands.Cog):
         emulation_stream.load_state()
 
     @commands.Command
-    async def poke(ctx):
+    async def poke(self, ctx):
         pass             
 
 class GifExporter():
