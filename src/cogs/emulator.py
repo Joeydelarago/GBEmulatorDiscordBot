@@ -6,8 +6,10 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from discord.ext import commands
 
+from game_library_seacher import GameLibrarySearcher
+
 """ Manages emulator state and returns gifs """
-class emulator(commands.Cog):
+class Emulator(commands.Cog):
     def __init__(self, client):
         
         self.buffer_seconds = 4 # buffer size in seconds
@@ -19,6 +21,8 @@ class emulator(commands.Cog):
         
         self.gif_exporter = GifExporter()
         
+        self.libary_searcher = GameLibrarySearcher("roms")
+
         # Saving init
         self.save_slot = 0
         self.save_prefix = "state_file_"
@@ -41,7 +45,11 @@ class emulator(commands.Cog):
         save_name = self.save_prefix + str(self.save_slot) + self.save_postfix
         with open(save_name, "rb") as save_file:
             self.pyboy.load_state(save_file)
-        
+
+    def initialize_game(self, rom: str):
+        self.pyboy = PyBoy(rom)
+        self.rom_path = self.libary_searcher.library_path + rom
+
     def input(self, event: WindowEvent):
         # Pass event to pyboy emulator
         self.pyboy.send_input(event)
@@ -91,6 +99,21 @@ class emulator(commands.Cog):
         self.export_buffer_as_gif()
         self.save_state()
         return
+
+
+    @commands.Command(
+        brief="Will load the game if there is only one result for the search.",
+        usage="load [game title]"
+    )
+    async def load(self, ctx, query: str):
+        search_results = self.libary_searcher.search_text(query)
+        if len(search_results) == 1:
+            self.initialize_game(search_results[0])
+        else:
+            #print some search options in chat
+            pass
+
+
 
     @commands.Command
     async def poke(self, ctx, move, amount):
@@ -142,4 +165,4 @@ class ImageBuffer():
     
 
 def setup(client: commands.Bot):
-    client.add_cog(emulator(client))
+    client.add_cog(Emulator(client))
