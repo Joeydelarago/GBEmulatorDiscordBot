@@ -2,18 +2,18 @@ from logging import Logger
 from typing import List
 from PIL.Image import Image
 from pyboy import PyBoy
-
 from pyboy.utils import WindowEvent
 from discord.ext import commands
+from cogs.game_library_seacher import GameLibrarySearcher
 
-from game_library_seacher import GameLibrarySearcher
+import discord.embeds
 
 """ Manages emulator state and returns gifs """
 class Emulator(commands.Cog):
     def __init__(self, client):
         
-        self.buffer_seconds = 4 # buffer size in seconds
-        self.rom_path='roms/pokemon-red.gb'
+        self.buffer_seconds = 6 # buffer size in seconds
+        self.rom_path = 'roms/pokemon-red.gb'
         self.client = client
 
         # Initialize emulator screenshot buffer, each second is 60 frames
@@ -57,36 +57,37 @@ class Emulator(commands.Cog):
     def move(self, move):
         if move == 'up':
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_UP)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_ARROW_UP)      
         elif move == 'down':
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_DOWN)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)      
         elif move == 'right':     
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
         elif move == 'left':
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_LEFT)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
         elif move == 'a':
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)        
         elif move == 'b':
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_B)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_B)      
         elif move == 'start':
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_START)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_START)       
         elif move == 'select':
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_SELECT)
-            self.tick(2)
+            self.tick(25)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
+
 
     @commands.Command
     async def newgame(self, ctx):
@@ -98,13 +99,7 @@ class Emulator(commands.Cog):
         self.tick(self.buffer_seconds * 60)
         self.export_buffer_as_gif()
         self.save_state()
-        return
-
-
-    @commands.Command(
-        brief="Will load the game if there is only one result for the search.",
-        usage="load [game title]"
-    )
+        
     async def load(self, ctx, query: str):
         search_results = self.libary_searcher.search_text(query)
         if len(search_results) == 1:
@@ -113,23 +108,22 @@ class Emulator(commands.Cog):
             #print some search options in chat
             pass
 
-
-
     @commands.Command
-    async def poke(self, ctx, move, amount):
+    async def gba(self, ctx, move, amount: int=1):
         self.pyboy = PyBoy(self.rom_path)
 
         # This will try to emulate as fast as possible
         self.pyboy.set_emulation_speed(0)
         self.load_state()
-        self.tick(2)
-        i = 0
-        while i < amount:
+        self.tick(20)
+        for i in range(amount):
             self.move(move)
         self.tick(self.buffer_seconds * 60)
         self.export_buffer_as_gif()
         self.save_state()
-        return             
+        await ctx.send(file=discord.File('output.gif'))        
+        self.pyboy.stop
+
 
 class GifExporter():
     def __init__(self):
