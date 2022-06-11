@@ -10,7 +10,7 @@ from discord.ext import commands
 class emulator(commands.Cog):
     def __init__(self, client):
         
-        self.buffer_seconds = 6 # buffer size in seconds
+        self.buffer_seconds = 4 # buffer size in seconds
         self.rom_path='roms/pokemon-red.gb'
         self.client = client
 
@@ -100,7 +100,9 @@ class emulator(commands.Cog):
         self.pyboy.set_emulation_speed(0)
         self.load_state()
         self.tick(2)
-        self.move(move)   
+        i = 0
+        while i < amount:
+            self.move(move)
         self.tick(self.buffer_seconds * 60)
         self.export_buffer_as_gif()
         self.save_state()
