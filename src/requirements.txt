@@ -2,4 +2,5 @@ discord.py==1.7.3
 Pillow==9.1.1
 pyboy==1.4.7
 python-dotenv==0.20.0
-pysdl2==2.0.5
+pysdl2
+discord==1.7.3
