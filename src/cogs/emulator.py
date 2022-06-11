@@ -9,15 +9,12 @@ from discord.ext import commands
 """ Manages emulator state and returns gifs """
 class emulator(commands.Cog):
     def __init__(self, client):
-        ROM_PATH='roms/pokemon-red.gb'
+        
         BUFFER_SECONDS=3 # buffer size in seconds
 
         self.client = client
-        self.pyboy = PyBoy(ROM_PATH)
         
-        # This will try to emulate as fast as possible
-        self.pyboy.set_emulation_speed(0)
-        
+
         # Initialize emulator screenshot buffer, each second is 60 frames
         self.image_buffer = ImageBuffer(BUFFER_SECONDS * 60)
         
@@ -52,12 +49,17 @@ class emulator(commands.Cog):
 
     @commands.Command
     async def newgame(self, ctx):
-        emulation_stream = EmulationStreamer(ROM_PATH)
-        emulation_stream.tick(1800)
-        emulation_stream.export_buffer_as_gif()
-        emulation_stream.save_state()
-        emulation_stream.tick(100)
-        emulation_stream.load_state()
+        rom_path='roms/pokemon-red.gb'
+
+        self.pyboy = PyBoy(rom_path)
+
+        # This will try to emulate as fast as possible
+        self.pyboy.set_emulation_speed(0)
+
+        self.tick(1800)
+        self.export_buffer_as_gif()
+        self.save_state()
+        return
 
     @commands.Command
     async def poke(self, ctx):
@@ -93,7 +95,7 @@ class ImageBuffer():
         # Return everything in buffer in order starting with item at buffer_index
         all = self.buffer[self.index:] + self.buffer[0:self.index]
         all = [frame for frame in all if frame is not None]
-        return 
+        return all
     
 
 def setup(client: commands.Bot):
