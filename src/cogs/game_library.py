@@ -7,7 +7,7 @@ from typing import List, Set
 
 from discord.ext import commands
 
-from src.message_interaction import read_emoji_options
+from modules.message_interaction import read_emoji_options
 
 class GameLibraryManager(commands.Cog):
     def __init__(self, client):

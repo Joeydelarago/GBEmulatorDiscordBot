@@ -1,12 +1,13 @@
 import logging
 import os
+
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from discord.ext import commands
 
 import discord.embeds
-from src.gif_exporter import GifExporter
-from src.image_buffer import ImageBuffer
+from modules.gif_exporter import GifExporter
+from modules.image_buffer import ImageBuffer
 
 
 class Emulator(commands.Cog):
@@ -18,7 +19,7 @@ class Emulator(commands.Cog):
         self.saves_path = os.getcwd() + "/saves"
         self.current_rom_name = ""
         self.save_slot = 0
-        #  0 is fast as possible
+        # 0 is fast as possible
         self.emulation_speed = 0
 
         # Initialize emulator screenshot buffer, each second is 60 frames
