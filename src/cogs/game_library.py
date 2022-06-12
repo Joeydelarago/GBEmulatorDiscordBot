@@ -7,15 +7,14 @@ from typing import List, Set
 
 from discord.ext import commands
 
-from modules.message_interaction import read_emoji_options
+from src.modules.message_interaction import read_emoji_options
 
 class GameLibraryManager(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.library_path = os.getcwd() + "/roms"
+        self.library_path = os.path.join(os.getcwd(), "roms")
         self.library = self.load_library(self.library_path)
         self.search_results = []
-        # self.search_options= ["⬅", "⬆", "⬇", "➡", "🅰", "🅱", "⏸", "️🈂"]
         self.search_options = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
     def load_library(self, path: str) -> Set[str]:
@@ -43,8 +42,8 @@ class GameLibraryManager(commands.Cog):
 
     def get_game_path(self, rom_name):
         """ Get the path of the gb file for the rom with rom_name """
-        game_path = f"{self.library_path}/{rom_name}.gb"
-        game_zipped_path = f"{self.library_path}/{rom_name}.zip"
+        game_path = f"{os.path.join(self.library_path, rom_name)}.gb"
+        game_zipped_path = f"{os.path.join(self.library_path, rom_name)}.zip"
 
         if os.path.exists(game_path):
             #  We have the game so return it
@@ -71,7 +70,7 @@ class GameLibraryManager(commands.Cog):
             reaction = await self.choose_from_list(ctx, search_results)
 
             if reaction:
-                rom_name = search_results[self.search_options.index(reaction) - 1]
+                rom_name = search_results[self.search_options.index(reaction)]
                 rom_path = self.get_game_path(rom_name)
 
                 emulator = self.client.get_cog("Emulator")

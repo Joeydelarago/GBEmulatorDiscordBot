@@ -11,7 +11,7 @@ os.chdir(Path(__file__).parent.parent)
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 ABS_PATH = Path(os.getcwd())
-COG_FOLDER = os.path.join(ABS_PATH, 'src\cogs')
+COG_FOLDER = os.path.join(ABS_PATH, "src", "cogs")
 
 client = commands.Bot(
     command_prefix=">",
