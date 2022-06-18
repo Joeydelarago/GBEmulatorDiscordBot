@@ -6,6 +6,7 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from discord.ext import commands
 
+from src.modules.gif_exporter import GifExporter
 from src.modules.image_buffer import ImageBuffer
 
 
@@ -36,6 +37,9 @@ class Emulator(commands.Cog):
         self.buffer_size = 6 * 60  # Buffer size in seconds multiplied by frames per second
         self.image_buffer = ImageBuffer(self.buffer_size)
 
+        self.gif_path = "output.gif"
+        self.gif_exporter = GifExporter()
+
         self.initialize_game("pokemon-red", os.path.join(os.getcwd(), "roms", "pokemon-red.gb"))
 
         self.current_message = None
@@ -52,6 +56,9 @@ class Emulator(commands.Cog):
         self.pyboy.set_emulation_speed(self.emulation_speed)
         self.save_slot = save_slot
         self.load_state()
+
+        # Fill buffer so we can send initial gif
+        self.tick(self.buffer_size)
 
     def close_game(self):
         """ Shutdown pyboy and save game state """
@@ -80,17 +87,17 @@ class Emulator(commands.Cog):
 
     async def send_game_input(self, button, amount):
         for i in range(amount):
-            self.pyboy.send_input(button[0])
+            self.pyboy.send_input(self.BUTTONS[button][0])
             for i in range(0, self.button_press_ticks):
                 self.pyboy.tick()
-            self.pyboy.send_input(button[1])
+            self.pyboy.send_input(self.BUTTONS[button][1])
             if amount > 1:
                 await asyncio.sleep(0.1)
 
-    async def process_frame(self):
-        self.tick(self.buffer_size)
-        self.export_buffer_as_gif()
-
+    def create_gif(self) -> str:
+        """ Creates a new gif and returns the path to the gif"""
+        self.gif_exporter.create_gif(self.image_buffer.get_all(), self.gif_path)
+        return self.gif_path
 
     @commands.Command
     async def tick_test(self, ctx, tick_count: int = 60):

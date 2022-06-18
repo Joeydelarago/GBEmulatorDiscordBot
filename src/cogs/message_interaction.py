@@ -1,3 +1,5 @@
+import logging
+
 import discord
 
 from discord.ext import commands
@@ -10,8 +12,8 @@ from src.modules.message_utils import read_emoji_options
 class MessageInteraction(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.gif_path = "output.gif"
-        self.gif_exporter = GifExporter()
+        self.current_game_message = None
+        self.input_options= ["⬅", "⬆", "⬇", "➡", "🅰", "🅱", "⏸", "⏸"]
 
         self.buttons = {
             "up": "up",
@@ -53,19 +55,42 @@ class MessageInteraction(commands.Cog):
         }
 
     @commands.Command
-    async def start_game(self, ctx):
-        self.send_game_message(ctx)
+    async def start_game(self, ctx) -> None:
+        await self.update_message(ctx)
 
-        # Ronan take input stuff here
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, member) -> None:
+        if not self.current_game_message or not reaction.message.id == self.current_game_message.id:
+            # This is not a message we are watching reactions for
+            return
 
-    def send_game_message(self, ctx):
-        self.create_output_gif()
-        await ctx.send(file=discord.File(self.gif_path))
+        if member.bot:
+            # Reaction is from a bot, nothing should be done
+            return
 
-    def create_output_gif(self):
+        await self.process_input(reaction.emoji, reaction.message.channel)
+
+    async def process_input(self, button_input: str, ctx) -> None:
+        if button_input not in self.button_map_words.keys():
+            logging.warning(f"There is no input for this reaction: {button_input}")
+            return
+
         emulator: Emulator = self.client.get_cog("Emulator")
-        images = emulator.get_image_buffer()
-        self.gif_exporter.create_gif(images, self.gif_path)
+        await emulator.send_game_input(self.button_map_words[button_input], 1)
+
+        await self.update_message(ctx)
+
+    async def update_message(self, ctx) -> None:
+        if self.current_game_message:
+            await self.current_game_message.delete()
+
+        emulator: Emulator = self.client.get_cog("Emulator")
+        gif_path = emulator.create_gif()
+
+        self.current_game_message = await ctx.send(file=discord.File(gif_path))
+
+        for option in self.input_options:
+            await self.current_game_message.add_reaction(option)
 
 
 def setup(client: commands.Bot):
