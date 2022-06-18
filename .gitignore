@@ -129,4 +129,8 @@ dmypy.json
 .pyre/
 
 #roms
-roms/*
+roms/*.7z
+roms/*.zip
+
+#saves
+saves/*.state

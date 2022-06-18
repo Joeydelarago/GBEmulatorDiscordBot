@@ -32,7 +32,7 @@ class GameLibraryManager(commands.Cog):
 
     def extract_7z_game(self, path: str):
         """ Extract 7z roms in rom path """
-        with py7zr.SevenZipFile('sample.7z', mode='r') as seven_zip_ref:
+        with py7zr.SevenZipFile(path, mode='r') as seven_zip_ref:
             seven_zip_ref.extractall(self.library_path)
 
     def search_text(self, query: str) -> List[str]:

@@ -5,4 +5,4 @@ python-dotenv==0.20.0
 pysdl2
 discord==1.7.3
 tabulate==0.8.9
-py7zr=0.18.9
+py7zr==0.18.9
