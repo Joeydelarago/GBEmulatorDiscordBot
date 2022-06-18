@@ -5,9 +5,7 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from discord.ext import commands
 
-from src.modules.gif_exporter import GifExporter
 from src.modules.image_buffer import ImageBuffer
-from modules.input import Input
 
 
 class Emulator(commands.Cog):
@@ -25,7 +23,6 @@ class Emulator(commands.Cog):
     """ Manages emulator state and returns gifs """
     def __init__(self, client):
         self.client = client
-        self.input = Input()
         self.pyboy = None
 
         self.saves_path = os.path.join(os.getcwd(), "saves")
@@ -37,8 +34,6 @@ class Emulator(commands.Cog):
         # Initialize emulator screenshot buffer, each second is 60 frames
         self.buffer_size = 6 * 60  # Buffer size in seconds multiplied by frames per second
         self.image_buffer = ImageBuffer(self.buffer_size)
-        
-        self.gif_exporter = GifExporter()
 
         self.initialize_game("pokemon-red", os.path.join(os.getcwd(), "roms", "pokemon-red.gb"))
 
@@ -66,9 +61,6 @@ class Emulator(commands.Cog):
             #  This will remove the pyboy from memory
             self.pyboy = None
 
-    def export_buffer_as_gif(self):
-        self.gif_exporter.create_gif(self.image_buffer.get_all())
-
     def save_state(self) -> None:
         save_name = f"{self.current_rom_name}_{self.save_slot}.state"
         with open(os.path.join(self.saves_path, save_name), "wb") as save_file:
@@ -85,9 +77,8 @@ class Emulator(commands.Cog):
         with open(os.path.join(self.saves_path, save_name), "rb") as save_file:
             self.pyboy.load_state(save_file)
 
-    async def process_frame(self):
-        self.tick(self.buffer_size)
-        self.export_buffer_as_gif()
+    def get_image_buffer(self):
+        return self.image_buffer.get_all()
 
     def move(self, move):
         if move == 'up' or move == "⬆":
