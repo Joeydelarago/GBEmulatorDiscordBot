@@ -7,19 +7,32 @@ from discord.ext import commands
 
 from src.modules.gif_exporter import GifExporter
 from src.modules.image_buffer import ImageBuffer
+from modules.input import Input
 
 
 class Emulator(commands.Cog):
+    BUTTONS = {
+            "up": (WindowEvent.PRESS_ARROW_UP, WindowEvent.RELEASE_ARROW_UP),
+            "down": (WindowEvent.PRESS_ARROW_DOWN, WindowEvent.RELEASE_ARROW_DOWN),
+            "right": (WindowEvent.PRESS_ARROW_RIGHT, WindowEvent.RELEASE_ARROW_RIGHT),
+            "left": (WindowEvent.PRESS_ARROW_LEFT, WindowEvent.RELEASE_ARROW_LEFT),
+            "a": (WindowEvent.PRESS_BUTTON_A, WindowEvent.RELEASE_BUTTON_A),
+            "b": (WindowEvent.PRESS_BUTTON_B, WindowEvent.RELEASE_BUTTON_B),
+            "start": (WindowEvent.PRESS_BUTTON_START, WindowEvent.RELEASE_BUTTON_START),
+            "select": (WindowEvent.PRESS_BUTTON_SELECT, WindowEvent.RELEASE_BUTTON_SELECT)
+        }
+    
     """ Manages emulator state and returns gifs """
     def __init__(self, client):
         self.client = client
+        self.input = Input()
         self.pyboy = None
 
         self.saves_path = os.path.join(os.getcwd(), "saves")
         self.current_rom_name = ""
         self.save_slot = 0
-        # 0 is fast as possible
         self.emulation_speed = 0
+        
 
         # Initialize emulator screenshot buffer, each second is 60 frames
         self.buffer_size = 6 * 60  # Buffer size in seconds multiplied by frames per second
