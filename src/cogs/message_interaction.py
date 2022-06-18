@@ -43,6 +43,5 @@ class MessageInteraction(commands.Cog):
             "➡": self.buttons["left"]
         }
 
-
 def setup(client: commands.Bot):
     client.add_cog(Input(client))

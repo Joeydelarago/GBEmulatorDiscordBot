@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
@@ -32,8 +33,8 @@ class Emulator(commands.Cog):
         self.current_rom_name = ""
         self.save_slot = 0
         self.emulation_speed = 0
+        self.button_press_ticks = 4
         
-
         # Initialize emulator screenshot buffer, each second is 60 frames
         self.buffer_size = 6 * 60  # Buffer size in seconds multiplied by frames per second
         self.image_buffer = ImageBuffer(self.buffer_size)
@@ -85,67 +86,23 @@ class Emulator(commands.Cog):
         with open(os.path.join(self.saves_path, save_name), "rb") as save_file:
             self.pyboy.load_state(save_file)
 
+    async def send_game_input(self, button, amount):
+        for i in range(amount):
+            self.pyboy.send_input(button[0])
+            for i in range(0, self.button_press_ticks):
+                self.pyboy.tick()
+            self.pyboy.send_input(button[1])
+            if amount > 1:
+                await asyncio.sleep(0.1)
+
     async def process_frame(self):
         self.tick(self.buffer_size)
         self.export_buffer_as_gif()
 
-    def move(self, move):
-        if move == 'up' or move == "⬆":
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_UP)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_UP)      
-        elif move == 'down' or move == "⬇":
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_DOWN)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)      
-        elif move == 'right' or move == "➡":
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
-        elif move == 'left' or move == "⬅":
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_LEFT)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
-        elif move == 'a' or move == "🅰":
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)        
-        elif move == 'b' or move == "🅱":
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_B)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_B)      
-        elif move == 'start' or move == "⏸":
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_START)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_START)       
-        elif move == 'select' or move == "️🈂":
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_SELECT)
-            self.tick(25)
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
 
     @commands.Command
     async def tick_test(self, ctx, tick_count: int = 60):
         self.tick(tick_count)
-
-    # @commands.Command
-    # async def newgame(self, ctx):
-    #     self.initialize_game("pokemon-red", self.roms_path + "/" + "pokemon-red.gb")
-    #     self.tick(self.buffer_seconds * 60)
-    #     self.export_buffer_as_gif()
-    #     self.save_state()
-    #     return
-    #
-    # @commands.Command
-    # async def gba(self, ctx, move, amount: int = 1):
-    #     self.initialize_game("pokemon-red", self.roms_path + "/" + "pokemon-red.gb")
-    #     self.tick(20)
-    #     for i in range(amount):
-    #         self.move(move)
-    #     self.tick(self.buffer_seconds * 60)
-    #     self.export_buffer_as_gif()
-    #     self.save_state()
-    #     await ctx.send(file=discord.File('output.gif'))
-    #     self.pyboy.stop()
 
 
 def setup(client: commands.Bot):
