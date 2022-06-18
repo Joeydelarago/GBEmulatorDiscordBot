@@ -1,4 +1,7 @@
-class Input(commands.Cog):
+from discord.ext import commands
+
+
+class MessageInteraction(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.buttons = {
