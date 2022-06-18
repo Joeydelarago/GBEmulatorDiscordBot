@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import zipfile
@@ -8,7 +7,7 @@ from typing import List, Set
 from discord.ext import commands
 from py7zr import py7zr
 
-from src.modules.message_interaction import read_emoji_options
+from src.modules.message_utils import read_emoji_options
 
 class GameLibraryManager(commands.Cog):
     def __init__(self, client):
