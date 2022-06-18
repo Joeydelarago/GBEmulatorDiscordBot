@@ -6,6 +6,7 @@ import zipfile
 from typing import List, Set
 
 from discord.ext import commands
+from py7zr import py7zr
 
 from src.modules.message_interaction import read_emoji_options
 
@@ -29,6 +30,11 @@ class GameLibraryManager(commands.Cog):
         with zipfile.ZipFile(path, "r") as zip_ref:
             zip_ref.extractall(self.library_path)
 
+    def extract_7z_game(self, path: str):
+        """ Extract 7z roms in rom path """
+        with py7zr.SevenZipFile('sample.7z', mode='r') as seven_zip_ref:
+            seven_zip_ref.extractall(self.library_path)
+
     def search_text(self, query: str) -> List[str]:
         """ Searches for game matching query and returns up to 10 rom names (Not file names) """
         matching = [match for match in self.library if query.lower() in match.lower()]
@@ -44,6 +50,7 @@ class GameLibraryManager(commands.Cog):
         """ Get the path of the gb file for the rom with rom_name """
         game_path = f"{os.path.join(self.library_path, rom_name)}.gb"
         game_zipped_path = f"{os.path.join(self.library_path, rom_name)}.zip"
+        game_7z_path = f"{os.path.join(self.library_path, rom_name)}.7z"
 
         if os.path.exists(game_path):
             #  We have the game so return it
@@ -51,6 +58,9 @@ class GameLibraryManager(commands.Cog):
         elif os.path.exists(game_zipped_path):
             #  We have the game, but it is zipped so unzip it first
             self.extract_zipped_game(game_zipped_path)
+            return game_path
+        elif os.path.exists(game_7z_path):
+            self.extract_7z_game(game_7z_path)
             return game_path
         else:
             #  We can't find the requested game
