@@ -58,7 +58,7 @@ class MessageInteraction(commands.Cog):
 
         # Ronan take input stuff here
 
-    def send_game_message(self, ctx):
+    async def send_game_message(self, ctx):
         self.create_output_gif()
         await ctx.send(file=discord.File(self.gif_path))
 
@@ -67,6 +67,11 @@ class MessageInteraction(commands.Cog):
         images = emulator.get_image_buffer()
         self.gif_exporter.create_gif(images, self.gif_path)
 
-
+    @commands.Command
+    async def move(self, ctx, move, amount):
+        emulator: Emulator = self.client.get_cog("Emulator")
+		if (move in self.button_map_words):
+			await emulator.send_game_input(self.button_map_words[move], amount)
+    
 def setup(client: commands.Bot):
     client.add_cog(MessageInteraction(client))
