@@ -85,6 +85,13 @@ class Emulator(commands.Cog):
         with open(os.path.join(self.saves_path, save_name), "rb") as save_file:
             self.pyboy.load_state(save_file)
 
+        # Fill buffer so we can send initial gif
+        self.tick(self.buffer_size)
+
+
+    def change_save_slot(self, slot_index: int) -> None:
+        self.save_slot = slot_index
+
     async def send_game_input(self, button, amount):
         for i in range(amount):
             self.pyboy.send_input(self.BUTTONS[button][0])

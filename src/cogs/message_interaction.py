@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import discord
 
@@ -57,6 +58,31 @@ class MessageInteraction(commands.Cog):
     @commands.Command
     async def start_game(self, ctx) -> None:
         await self.update_message(ctx)
+
+    @commands.Command
+    async def save_state(self, ctx, slot_index: Optional[int] = None) -> None:
+        emulator: Emulator = self.client.get_cog("Emulator")
+
+        if slot_index:
+            emulator.change_save_slot(slot_index)
+
+        emulator.save_state()
+
+    @commands.Command
+    async def load_state(self, ctx, slot_index: Optional[int] = None) -> None:
+        emulator: Emulator = self.client.get_cog("Emulator")
+
+        if slot_index:
+            emulator.change_save_slot(slot_index)
+
+        emulator.load_state()
+
+        await self.update_message(ctx)
+
+    @commands.Command
+    async def save_slot(self, slot_index: int):
+        emulator: Emulator = self.client.get_cog("Emulator")
+        emulator.change_save_slot(slot_index)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, member) -> None:
