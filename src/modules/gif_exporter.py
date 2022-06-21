@@ -36,10 +36,3 @@ class GifExporter:
                             append_images=frames[1:],
                             duration=100,
                             loop=0)  
-
-        facade = Image.open('gb_facade.png')
-        output = Image.open('output.gif')
-        gb = facade.copy()
-        gb.paste(output, (67, 64))
-        gb.save('gb_output.gif', format="GIF", append_images=images, save_all=True, duration=16, loop=0)
-
