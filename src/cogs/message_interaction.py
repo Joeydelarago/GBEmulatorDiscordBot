@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import discord
 
@@ -14,7 +13,7 @@ class MessageInteraction(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.current_game_message = None
-        self.input_options= ["⬅", "⬆", "⬇", "➡", "🅰", "🅱", "⏸", "⏸"]
+        self.input_options= ["⬅", "⬆", "⬇", "➡", "🅰", "🅱", "⏸", "🈂"]
 
         self.buttons = {
             "up": "up",
@@ -102,7 +101,7 @@ class MessageInteraction(commands.Cog):
             return
 
         emulator: Emulator = self.client.get_cog("Emulator")
-        await emulator.send_game_input(self.button_map_words[button_input], 1)
+        await emulator.send_input(self.button_map_words[button_input], 1)
 
         await self.update_message(ctx)
 
@@ -117,6 +116,23 @@ class MessageInteraction(commands.Cog):
 
         for option in self.input_options:
             await self.current_game_message.add_reaction(option)
+
+    @commands.Command
+    async def start_game(self, ctx) -> None:
+        await self.update_message(ctx)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, member) -> None:
+        emulator: Emulator = self.client.get_cog("Emulator")
+        if not self.current_game_message or not reaction.message.id == self.current_game_message.id:
+            # This is not a message we are watching reactions for
+            return
+
+        if member.bot:
+            # Reaction is from a bot, nothing should be done
+            return
+
+        await self.process_input(reaction.emoji, reaction.message.channel)
 
 
 def setup(client: commands.Bot):

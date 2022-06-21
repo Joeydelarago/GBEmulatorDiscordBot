@@ -32,9 +32,10 @@ class Emulator(commands.Cog):
         self.save_slot = 0
         self.emulation_speed = 0
         self.button_press_ticks = 4
-        
+        self.gif_length = 6
+
         # Initialize emulator screenshot buffer, each second is 60 frames
-        self.buffer_size = 6 * 60  # Buffer size in seconds multiplied by frames per second
+        self.buffer_size = self.gif_length * 60  # Buffer size in seconds multiplied by frames per second
         self.image_buffer = ImageBuffer(self.buffer_size)
 
         self.gif_path = "output.gif"
@@ -88,18 +89,16 @@ class Emulator(commands.Cog):
         # Fill buffer so we can send initial gif
         self.tick(self.buffer_size)
 
-
     def change_save_slot(self, slot_index: int) -> None:
         self.save_slot = slot_index
 
-    async def send_game_input(self, button, amount):
+    async def send_input(self, button, amount):
         for i in range(amount):
             self.pyboy.send_input(self.BUTTONS[button][0])
             for i in range(0, self.button_press_ticks):
                 self.pyboy.tick()
             self.pyboy.send_input(self.BUTTONS[button][1])
-            if amount > 1:
-                await asyncio.sleep(0.1)
+            self.tick(self.gif_length * 60)
 
     def create_gif(self) -> str:
         """ Creates a new gif and returns the path to the gif"""
