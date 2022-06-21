@@ -1,12 +1,11 @@
 import logging
+from typing import Optional
 
 import discord
 
 from discord.ext import commands
 
 from src.cogs.emulator import Emulator
-from src.modules.gif_exporter import GifExporter
-from src.modules.message_utils import read_emoji_options
 
 
 class MessageInteraction(commands.Cog):
