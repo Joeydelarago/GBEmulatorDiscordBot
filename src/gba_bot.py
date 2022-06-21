@@ -23,18 +23,5 @@ for filename in os.listdir(COG_FOLDER):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
 
-@client.event
-async def on_raw_reaction_add(payload):
-    if payload.user_id == "984864873450176602":
-        return
-
-    if payload.emoji.name == "arrow_up_small":
-        pass
-    elif emoji == "emoji 2":
-        pass
-    elif emoji == "emoji 3":
-        pass
-    else:
-        return
 
 client.run(TOKEN)

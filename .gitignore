@@ -131,6 +131,7 @@ dmypy.json
 #roms
 roms/*.7z
 roms/*.zip
+roms/*.gb
 
 #saves
 saves/*.state
