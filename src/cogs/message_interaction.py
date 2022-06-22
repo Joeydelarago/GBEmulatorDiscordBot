@@ -53,6 +53,29 @@ class MessageInteraction(commands.Cog):
             "➡": self.buttons["left"]
         }
 
+    
+    async def process_input(self, button_input: str, ctx) -> None:
+        if button_input not in self.button_map_words.keys():
+            logging.warning(f"There is no input for this reaction: {button_input}")
+            return
+
+        emulator: Emulator = self.client.get_cog("Emulator")
+        await emulator.send_input(self.button_map_words[button_input], 1)
+
+        await self.update_message(ctx)
+
+    async def update_message(self, ctx) -> None:
+        if self.current_game_message:
+            await self.current_game_message.delete()
+
+        emulator: Emulator = self.client.get_cog("Emulator")
+        gif_path = emulator.create_gif()
+
+        self.current_game_message = await ctx.send(file=discord.File(gif_path))
+
+        for option in self.input_options:
+            await self.current_game_message.add_reaction(option)
+            
     @commands.Command
     async def start_game(self, ctx) -> None:
         await self.update_message(ctx)
@@ -93,28 +116,6 @@ class MessageInteraction(commands.Cog):
             return
 
         await self.process_input(reaction.emoji, reaction.message.channel)
-
-    async def process_input(self, button_input: str, ctx) -> None:
-        if button_input not in self.button_map_words.keys():
-            logging.warning(f"There is no input for this reaction: {button_input}")
-            return
-
-        emulator: Emulator = self.client.get_cog("Emulator")
-        await emulator.send_input(self.button_map_words[button_input], 1)
-
-        await self.update_message(ctx)
-
-    async def update_message(self, ctx) -> None:
-        if self.current_game_message:
-            await self.current_game_message.delete()
-
-        emulator: Emulator = self.client.get_cog("Emulator")
-        gif_path = emulator.create_gif()
-
-        self.current_game_message = await ctx.send(file=discord.File(gif_path))
-
-        for option in self.input_options:
-            await self.current_game_message.add_reaction(option)
 
     @commands.Command
     async def start_game(self, ctx) -> None:

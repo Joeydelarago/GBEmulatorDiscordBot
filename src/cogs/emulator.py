@@ -48,7 +48,8 @@ class Emulator(commands.Cog):
     def tick(self, tick_count: int) -> None:
         for t in range(tick_count):
             self.pyboy.tick()
-            self.image_buffer.push(self.pyboy.screen_image())
+            gameboy = self.gif_exporter.add_facade(self.pyboy.screen_image())
+            self.image_buffer.push(gameboy)
 
     def initialize_game(self, rom_name: str, rom_path: str, save_slot: int = 0) -> None:
         """ Load up new rom and load state """
