@@ -32,7 +32,7 @@ class Emulator(commands.Cog):
         self.save_slot = 0
         self.emulation_speed = 0
         self.button_press_ticks = 4
-        self.gif_length = 6
+        self.gif_length = 6 #seconds
 
         # Initialize emulator screenshot buffer, each second is 60 frames
         self.buffer_size = self.gif_length * 60  # Buffer size in seconds multiplied by frames per second
