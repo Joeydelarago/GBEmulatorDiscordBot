@@ -38,6 +38,7 @@ This will toggle the Gameboy facade around the emulator.
 ### \>load
 
 "\>load" has a search feature that allows to query your game libary and select options using reactions.
+
 ![image](https://user-images.githubusercontent.com/23387864/175774653-b848bb07-3926-468b-9205-e97f3962553d.png)
 
 
