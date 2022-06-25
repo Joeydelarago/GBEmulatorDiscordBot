@@ -9,14 +9,14 @@ class GifExporter:
         pass
     
     def add_facade(self, frame):
-        facade = Image.open('Gameboy.png')
+        facade = Image.open('resources/Gameboy.png')
 
-        #resize frame by 2
+        # Resize frame by 2
         (width, height) = (frame.width * 2, frame.height * 2)
         frame = frame.resize((width, height), Image.ANTIALIAS)
 
-        #join frame and faceade to the buffer
-        gameboy = Image.new('RGBA', (512,700), (0, 0, 0, 0))
+        # Join frame and facade to the buffer
+        gameboy = Image.new('RGBA', (512, 700), (0, 0, 0, 0))
         gameboy.paste(facade, (0,0), mask=facade)
         gameboy.paste(frame, (66,69))
         return gameboy
