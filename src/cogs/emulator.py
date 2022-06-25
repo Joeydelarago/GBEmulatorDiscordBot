@@ -40,6 +40,9 @@ class Emulator(commands.Cog):
 
         self.gif_path = "output.gif"
         self.gif_exporter = GifExporter()
+        self.facade = "resources/Gameboy.png"
+        self.facade_paste_location = (66, 69)
+        self.facade_enabled = True
 
         self.initialize_game("pokemon-red", os.path.join(os.getcwd(), "roms", "pokemon-red.gb"))
 
@@ -48,8 +51,7 @@ class Emulator(commands.Cog):
     def tick(self, tick_count: int) -> None:
         for t in range(tick_count):
             self.pyboy.tick()
-            gameboy = self.gif_exporter.add_facade(self.pyboy.screen_image())
-            self.image_buffer.push(gameboy)
+            self.image_buffer.push(self.pyboy.screen_image())
 
     def initialize_game(self, rom_name: str, rom_path: str, save_slot: int = 0) -> None:
         """ Load up new rom and load state """
@@ -96,19 +98,27 @@ class Emulator(commands.Cog):
     async def send_input(self, button, amount):
         for i in range(amount):
             self.pyboy.send_input(self.BUTTONS[button][0])
-            for i in range(0, self.button_press_ticks):
+            for j in range(self.button_press_ticks):
                 self.pyboy.tick()
             self.pyboy.send_input(self.BUTTONS[button][1])
             self.tick(self.gif_length * 60)
 
     def create_gif(self) -> str:
         """ Creates a new gif and returns the path to the gif"""
-        self.gif_exporter.create_gif(self.image_buffer.get_all(), self.gif_path)
+        if self.facade_enabled:
+            self.gif_exporter.create_gif_with_facade(self.image_buffer.get_all(), self.gif_path, self.facade, self.facade_paste_location)
+        else:
+            self.gif_exporter.create_gif(self.image_buffer.get_all(), self.gif_path)
+
         return self.gif_path
 
     @commands.Command
     async def tick_test(self, ctx, tick_count: int = 60):
         self.tick(tick_count)
+
+    @commands.Command
+    async def toggle_facade(self, ctx):
+        self.facade_enabled = not self.facade_enabled
 
 
 def setup(client: commands.Bot):
